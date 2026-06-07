@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="fr"
+      xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{fragments/layout :: layout(~{::main-content}, 'Utilisateurs', 'Gestion des comptes')}">
+<head><title>Utilisateurs</title></head>
+<body>
+
+<th:block th:fragment="main-content">
+
+<div class="card">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <span><i class="bi bi-people me-2"></i>Comptes utilisateurs</span>
+        <a th:href="@{/admin/users/nouveau}" class="btn btn-sm btn-primary-custom">
+            <i class="bi bi-person-plus me-1"></i>Nouvel utilisateur
+        </a>
+    </div>
+
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-custom mb-0">
+                <thead>
+                    <tr>
+                        <th class="ps-3">Identifiant</th>
+                        <th>Email</th>
+                        <th>Rôle</th>
+                        <th>Pays</th>
+                        <th>Statut</th>
+                        <th>Créé le</th>
+                        <th class="pe-3 text-end">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:if="${#lists.isEmpty(users)}">
+                        <td colspan="7" class="text-center text-muted py-5">
+                            <i class="bi bi-inbox fs-2 d-block mb-2 opacity-30"></i>
+                            Aucun utilisateur trouvé
+                        </td>
+                    </tr>
+                    <tr th:each="u : ${users}">
+                        <td class="ps-3">
+                            <div class="fw-semibold" th:text="${u.username}">admin</div>
+                        </td>
+                        <td>
+                            <span th:text="${u.email ?: '—'}" class="text-muted">email</span>
+                        </td>
+                        <td>
+                            <span th:if="${u.role.name() == 'ADMIN'}"
+                                  class="badge text-bg-primary">Admin</span>
+                            <span th:if="${u.role.name() == 'MANAGER'}"
+                                  class="badge text-bg-warning text-dark">Manager</span>
+                            <span th:if="${u.role.name() == 'USER'}"
+                                  class="badge text-bg-secondary">Utilisateur</span>
+                        </td>
+                        <td>
+                            <span th:if="${u.pays != null}"
+                                  th:text="${u.pays.libelle}"
+                                  class="badge text-bg-light border">—</span>
+                            <span th:if="${u.pays == null}" class="text-muted">—</span>
+                        </td>
+                        <td>
+                            <span th:if="${u.enabled}" class="badge badge-confirmee rounded-pill px-2">
+                                <i class="bi bi-check-circle me-1"></i>Actif
+                            </span>
+                            <span th:if="${!u.enabled}" class="badge badge-rejetee rounded-pill px-2">
+                                <i class="bi bi-x-circle me-1"></i>Désactivé
+                            </span>
+                        </td>
+                        <td>
+                            <small class="text-muted"
+                                   th:text="${u.createdAt != null ? #temporals.format(u.createdAt, 'dd/MM/yyyy') : '—'}">
+                                01/01/2024
+                            </small>
+                        </td>
+                        <td class="pe-3 text-end">
+                            <div class="d-flex gap-1 justify-content-end">
+                                <a th:href="@{/admin/users/{id}/modifier(id=${u.id})}"
+                                   class="btn btn-sm btn-outline-primary" title="Modifier">
+                                    <i class="bi bi-pencil"></i>
+                                </a>
+                                <form th:action="@{/admin/users/{id}/supprimer(id=${u.id})}"
+                                      method="post" class="d-inline"
+                                      onsubmit="return confirm('Supprimer cet utilisateur ?')">
+                                    <button type="submit" class="btn btn-sm btn-outline-danger" title="Supprimer">
+                                        <i class="bi bi-trash"></i>
+                                    </button>
+                                </form>
+                            </div>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+</th:block>
+</body>
+</html>

@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="fr"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Simulateur de transfert — ChapChap</title>
+    <link rel="stylesheet" th:href="@{/css/bootstrap-icons.min.css}"/>
+    <link rel="stylesheet" th:href="@{/css/simulateur.css}"/>
+</head>
+<body class="sim-page">
+
+    <!-- ═══ HERO ═══ -->
+    <header class="sim-hero">
+        <div class="sim-brand">
+            <i class="bi bi-arrow-left-right"></i>
+            ChapChap
+        </div>
+        <h1>Simulateur de transfert</h1>
+        <p>Estimez en temps réel le montant que votre bénéficiaire va recevoir</p>
+    </header>
+
+    <!-- ═══ CARTE PRINCIPALE ═══ -->
+    <main class="sim-content">
+        <div class="sim-card">
+            <div class="sim-card-header">
+                <i class="bi bi-calculator"></i>
+                Calculez votre transfert
+            </div>
+            <div class="sim-card-body">
+
+                <!-- Sens du transfert -->
+                <div class="sim-field">
+                    <label class="sim-label" for="sens">Sens du transfert</label>
+                    <div class="sim-select-wrapper">
+                        <select class="sim-select" id="sens">
+                            <option value="TCHAD_MAROC">Tchad → Maroc</option>
+                            <option value="MAROC_TCHAD">Maroc → Tchad</option>
+                            <option value="FRANCE_TCHAD">France → Tchad</option>
+                            <option value="TCHAD_FRANCE">Tchad → France</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Montant envoyé -->
+                <div class="sim-field">
+                    <label class="sim-label" for="montantSrc">Vous envoyez</label>
+                    <div class="sim-input-group">
+                        <input class="sim-input" type="text" id="montantSrc"
+                               placeholder="Montant en FCFA"
+                               autocomplete="off" inputmode="decimal"/>
+                        <span class="sim-input-badge" id="badgeSrc">FCFA</span>
+                    </div>
+                </div>
+
+                <!-- Séparateur taux -->
+                <div class="sim-rate-row">
+                    <span class="sim-rate-chip">
+                        <i class="bi bi-arrow-down-up"></i>
+                        <span id="rateLabel">Commission 3 % · 64 FCFA = 1 MAD</span>
+                    </span>
+                </div>
+
+                <!-- Montant reçu -->
+                <div class="sim-field">
+                    <label class="sim-label" for="montantDest">Le bénéficiaire reçoit</label>
+                    <div class="sim-input-group">
+                        <input class="sim-input sim-input-dest" type="text" id="montantDest"
+                               placeholder="Montant en MAD"
+                               autocomplete="off" inputmode="decimal"/>
+                        <span class="sim-input-badge" id="badgeDest">MAD</span>
+                    </div>
+                </div>
+
+                <!-- Erreur -->
+                <div class="sim-error" id="zoneErreur"></div>
+
+            </div><!-- /sim-card-body -->
+        </div><!-- /sim-card -->
+    </main>
+
+    <!-- ═══ CONTACTS WHATSAPP ═══ -->
+    <section class="sim-contacts">
+        <div class="sim-contacts-card">
+            <div class="sim-contacts-header">
+                <i class="bi bi-chat-dots-fill"></i>
+                Une question ? Contactez-nous sur WhatsApp
+            </div>
+            <div class="sim-contacts-body">
+
+                <a href="https://wa.me/33605965324" target="_blank" rel="noopener" class="sim-contact-item">
+                    <span class="sim-contact-flag">🇫🇷</span>
+                    <div class="sim-contact-info">
+                        <div class="sim-contact-pays">France</div>
+                        <div class="sim-contact-num">+33 6 05 96 53 24</div>
+                    </div>
+                    <span class="sim-contact-wa">
+                        <i class="bi bi-whatsapp"></i>
+                    </span>
+                </a>
+
+                <a href="https://wa.me/23565285050" target="_blank" rel="noopener" class="sim-contact-item">
+                    <span class="sim-contact-flag">🇹🇩</span>
+                    <div class="sim-contact-info">
+                        <div class="sim-contact-pays">Tchad</div>
+                        <div class="sim-contact-num">+235 65 28 50 50</div>
+                    </div>
+                    <span class="sim-contact-wa">
+                        <i class="bi bi-whatsapp"></i>
+                    </span>
+                </a>
+
+                <a href="https://wa.me/212609544476" target="_blank" rel="noopener" class="sim-contact-item">
+                    <span class="sim-contact-flag">🇲🇦</span>
+                    <div class="sim-contact-info">
+                        <div class="sim-contact-pays">Maroc</div>
+                        <div class="sim-contact-num">+212 609-544476</div>
+                    </div>
+                    <span class="sim-contact-wa">
+                        <i class="bi bi-whatsapp"></i>
+                    </span>
+                </a>
+
+            </div>
+        </div>
+    </section>
+
+    <footer class="sim-footer">
+        &copy; ChapChap — Tous droits réservés
+    </footer>
+
+    <!-- ═══ CHATBOT FLOTTANT ═══ -->
+    <button class="chatbot-toggle" id="chatbotToggle" title="Assistant simulateur">
+        <i class="bi bi-chat-dots-fill"></i>
+    </button>
+
+    <div class="chatbot-panel" id="chatbotPanel" aria-hidden="true">
+        <div class="chatbot-header">
+            <span class="chatbot-header-title">
+                <i class="bi bi-robot"></i> Assistant ChapChap
+            </span>
+            <button class="chatbot-close" id="chatbotClose" aria-label="Fermer">
+                <i class="bi bi-x-lg"></i>
+            </button>
+        </div>
+        <div class="chatbot-messages" id="chatbotMessages">
+            <div class="chatbot-msg chatbot-msg-bot">
+                Bonjour ! Je peux vous aider avec les taux de change, les conversions et les calculs du simulateur. Posez votre question.
+            </div>
+        </div>
+        <div class="chatbot-input-area">
+            <input type="text" id="chatbotInput" class="chatbot-input"
+                   placeholder="Votre question..." autocomplete="off" maxlength="300"/>
+            <button class="chatbot-send" id="chatbotSend" aria-label="Envoyer">
+                <i class="bi bi-send-fill"></i>
+            </button>
+        </div>
+    </div>
+
+    <script th:src="@{/js/simulateur.js}"></script>
+</body>
+</html>

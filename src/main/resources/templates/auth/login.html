@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="fr" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Connexion — ChapChap</title>
+    <link rel="stylesheet" th:href="@{/css/bootstrap.min.css}"/>
+    <link rel="stylesheet" th:href="@{/css/bootstrap-icons.min.css}"/>
+    <style>
+        :root { --color-primary:#1e3a5f; --color-accent:#e8a020; }
+        body { background:#f4f6fb; min-height:100vh; display:flex; align-items:center;
+               justify-content:center; font-family:'Segoe UI',system-ui,sans-serif; }
+        .login-card { width:100%; max-width:400px; border:none; border-radius:1rem;
+                      box-shadow:0 4px 24px rgba(0,0,0,.12); }
+        .login-header { background:var(--color-primary); color:#fff; border-radius:1rem 1rem 0 0;
+                        padding:2rem; text-align:center; }
+        .login-header .brand { font-size:1.5rem; font-weight:700; letter-spacing:.5px; }
+        .login-header .sub { font-size:.75rem; opacity:.6; text-transform:uppercase; letter-spacing:1.5px; }
+        .login-body { padding:2rem; background:#fff; border-radius:0 0 1rem 1rem; }
+        .form-control { border-radius:.5rem; border-color:#e2e8f0; }
+        .form-control:focus { border-color:var(--color-primary); box-shadow:0 0 0 3px rgba(30,58,95,.12); }
+        .btn-login { background:var(--color-primary); border-color:var(--color-primary); color:#fff;
+                     border-radius:.5rem; padding:.6rem; font-weight:600; }
+        .btn-login:hover { background:#15294a; border-color:#15294a; color:#fff; }
+    </style>
+</head>
+<body>
+
+<div class="login-card card">
+    <div class="login-header">
+        <div class="mb-2">
+            <i class="bi bi-arrow-left-right fs-2" style="color:var(--color-accent)"></i>
+        </div>
+        <div class="brand">ChapChap</div>
+        <div class="sub mt-1">Gestion des transferts</div>
+    </div>
+
+    <div class="login-body">
+        <h5 class="mb-4 text-center fw-semibold" style="color:#1a202c;">Connexion</h5>
+
+        <div th:if="${param.error}" class="alert alert-danger py-2">
+            <i class="bi bi-exclamation-circle me-2"></i>Identifiant ou mot de passe incorrect.
+        </div>
+        <div th:if="${param.logout}" class="alert alert-info py-2">
+            <i class="bi bi-check-circle me-2"></i>Vous avez été déconnecté.
+        </div>
+
+        <form th:action="@{/login}" method="post">
+            <div class="mb-3">
+                <label class="form-label fw-medium" for="username">Identifiant</label>
+                <div class="input-group">
+                    <span class="input-group-text"><i class="bi bi-person"></i></span>
+                    <input type="text" id="username" name="username"
+                           class="form-control" placeholder="admin" autofocus required/>
+                </div>
+            </div>
+            <div class="mb-4">
+                <label class="form-label fw-medium" for="password">Mot de passe</label>
+                <div class="input-group">
+                    <span class="input-group-text"><i class="bi bi-lock"></i></span>
+                    <input type="password" id="password" name="password"
+                           class="form-control" placeholder="••••••••" required/>
+                </div>
+            </div>
+            <button type="submit" class="btn btn-login w-100">
+                <i class="bi bi-box-arrow-in-right me-2"></i>Se connecter
+            </button>
+        </form>
+    </div>
+</div>
+
+<script th:src="@{/js/bootstrap.bundle.min.js}"></script>
+</body>
+</html>

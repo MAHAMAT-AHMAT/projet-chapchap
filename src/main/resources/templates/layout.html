@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="fr" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title th:text="${pageTitle != null ? pageTitle + ' — ChapChap' : 'ChapChap'}">ChapChap</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet"/>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet"/>
+    <style>
+        :root {
+            --color-primary: #1e3a5f;
+            --color-accent:  #e8a020;
+            --sidebar-width: 240px;
+        }
+        body { background:#f4f6fb; font-family:'Segoe UI',system-ui,sans-serif; min-height:100vh; }
+
+        /* SIDEBAR */
+        .sidebar { position:fixed; top:0; left:0; width:var(--sidebar-width); height:100vh;
+            background:var(--color-primary); color:#fff; display:flex; flex-direction:column;
+            z-index:100; box-shadow:4px 0 12px rgba(0,0,0,.15); }
+        .sidebar-brand { padding:1.5rem 1.25rem; border-bottom:1px solid rgba(255,255,255,.12); }
+        .sidebar-brand .brand-name { font-size:1.25rem; font-weight:700; letter-spacing:.5px; }
+        .sidebar-brand .brand-sub  { font-size:.7rem; color:rgba(255,255,255,.55); text-transform:uppercase; letter-spacing:1.5px; }
+        .sidebar-nav { flex:1; padding:1rem 0; }
+        .nav-item-label { font-size:.65rem; text-transform:uppercase; letter-spacing:1.5px;
+            color:rgba(255,255,255,.4); padding:.5rem 1.25rem .25rem; }
+        .sidebar-nav .nav-link { color:rgba(255,255,255,.78); padding:.6rem 1.25rem; display:flex;
+            align-items:center; gap:.65rem; font-size:.875rem; transition:background .18s, color .18s; border-left:3px solid transparent; }
+        .sidebar-nav .nav-link:hover,
+        .sidebar-nav .nav-link.active { background:rgba(255,255,255,.1); color:#fff; }
+        .sidebar-nav .nav-link.active { border-left-color:var(--color-accent); }
+        .sidebar-nav .nav-link i { font-size:1rem; min-width:1.25rem; }
+
+        /* MAIN */
+        .main-wrapper { margin-left:var(--sidebar-width); min-height:100vh; display:flex; flex-direction:column; }
+        .topbar { background:#fff; border-bottom:1px solid #e2e8f0; padding:.75rem 1.75rem;
+            display:flex; align-items:center; justify-content:space-between;
+            position:sticky; top:0; z-index:90; }
+        .topbar-title { font-weight:600; font-size:1rem; color:#1a202c; }
+        .topbar-sub   { font-size:.78rem; color:#718096; margin-top:1px; }
+        .page-content { padding:1.75rem; flex:1; }
+
+        /* CARDS */
+        .card { border:none; border-radius:.75rem; box-shadow:0 1px 4px rgba(0,0,0,.07); }
+        .card-header { background:#fff; border-bottom:1px solid #edf2f7;
+            border-radius:.75rem .75rem 0 0 !important; padding:1rem 1.25rem;
+            font-weight:600; font-size:.9rem; color:var(--color-primary); }
+
+        /* STAT CARDS */
+        .stat-card { border-radius:.75rem; padding:1.25rem 1.5rem; color:#fff; position:relative; overflow:hidden; }
+        .stat-card::after { content:''; position:absolute; right:-20px; top:-20px;
+            width:100px; height:100px; border-radius:50%; background:rgba(255,255,255,.08); }
+        .stat-card .stat-label { font-size:.72rem; text-transform:uppercase; letter-spacing:1px; opacity:.85; }
+        .stat-card .stat-value { font-size:1.6rem; font-weight:700; margin:.25rem 0; }
+        .stat-card .stat-icon  { font-size:2rem; opacity:.25; position:absolute; right:1.25rem; bottom:.75rem; }
+        .stat-primary { background:#1e3a5f; }
+        .stat-success { background:#198754; }
+        .stat-danger  { background:#dc3545; }
+        .stat-warning { background:#ffc107; color:#1a202c; }
+        .stat-info    { background:#0891b2; }
+
+        /* BADGES */
+        .badge-en-attente { background-color:#fef3c7; color:#92400e; border:1px solid #fde68a; }
+        .badge-confirmee  { background-color:#d1fae5; color:#065f46; border:1px solid #a7f3d0; }
+        .badge-rejetee    { background-color:#fee2e2; color:#991b1b; border:1px solid #fecaca; }
+
+        /* TABLE */
+        .table-custom th { font-size:.72rem; text-transform:uppercase; letter-spacing:.8px;
+            color:#718096; font-weight:600; border-bottom:2px solid #edf2f7; background:#fafbfc; }
+        .table-custom td { vertical-align:middle; font-size:.875rem; }
+        .table-custom tbody tr:hover { background:#f7faff; }
+
+        /* BUTTONS */
+        .btn-primary-custom { background:var(--color-primary); border-color:var(--color-primary); color:#fff; }
+        .btn-primary-custom:hover { background:#15294a; border-color:#15294a; color:#fff; }
+
+        /* FORMS */
+        .form-label { font-weight:500; font-size:.85rem; color:#4a5568; }
+        .form-control, .form-select { border-radius:.5rem; border-color:#e2e8f0; font-size:.875rem; }
+        .form-control:focus, .form-select:focus { border-color:var(--color-primary); box-shadow:0 0 0 3px rgba(30,58,95,.12); }
+
+        /* ALERTS */
+        .alert { border-radius:.6rem; font-size:.875rem; }
+
+        /* MONTANTS */
+        .montant-entree { color:#198754; font-weight:600; }
+        .montant-sortie { color:#dc3545; font-weight:600; }
+
+        /* DEVISE SECTIONS */
+        .devise-section { background:#fff; border-radius:.75rem; box-shadow:0 1px 4px rgba(0,0,0,.07); overflow:hidden; }
+        .devise-header  { background:var(--color-primary); color:#fff; padding:.75rem 1.25rem;
+            font-weight:600; font-size:.9rem; display:flex; align-items:center; gap:.5rem; }
+        .devise-body { padding:1.25rem; }
+        .solde-display { text-align:center; padding:1rem; background:#f8fafc; border-radius:.5rem; margin-top:.75rem; }
+        .solde-display .solde-label { font-size:.72rem; text-transform:uppercase; letter-spacing:1px; color:#718096; }
+        .solde-display .solde-value { font-size:1.75rem; font-weight:700; }
+        .solde-positive { color:#198754; }
+        .solde-negative { color:#dc3545; }
+    </style>
+</head>
+<body>
+
+<!-- Définition du fragment layout -->
+<th:block th:fragment="layout(content, pageTitle, pageSubtitle)">
+
+    <!-- SIDEBAR -->
+    <aside class="sidebar">
+        <div class="sidebar-brand">
+            <div class="d-flex align-items-center gap-2 mb-1">
+                <i class="bi bi-arrow-left-right fs-4" style="color:var(--color-accent)"></i>
+                <span class="brand-name">ChapChap</span>
+            </div>
+            <div class="brand-sub">Gestion des transferts</div>
+        </div>
+        <nav class="sidebar-nav">
+            <div class="nav-item-label">Navigation</div>
+            <a th:href="@{/transactions/dashboard}"
+               th:classappend="${#httpServletRequest.requestURI.contains('dashboard')} ? 'active' : ''"
+               class="nav-link">
+                <i class="bi bi-grid-1x2"></i> Dashboard
+            </a>
+            <a th:href="@{/transactions}"
+               th:classappend="${#httpServletRequest.requestURI == '/transactions'} ? 'active' : ''"
+               class="nav-link">
+                <i class="bi bi-list-ul"></i> Transactions
+            </a>
+            <a th:href="@{/transactions/nouveau}" class="nav-link">
+                <i class="bi bi-plus-circle"></i> Nouvelle transaction
+            </a>
+        </nav>
+    </aside>
+
+    <!-- MAIN WRAPPER -->
+    <div class="main-wrapper">
+        <!-- Topbar -->
+        <div class="topbar">
+            <div>
+                <div class="topbar-title" th:text="${pageTitle}">ChapChap</div>
+                <div class="topbar-sub"   th:text="${pageSubtitle}"></div>
+            </div>
+            <a th:href="@{/transactions/nouveau}" class="btn btn-sm btn-primary-custom">
+                <i class="bi bi-plus-lg me-1"></i> Nouvelle transaction
+            </a>
+        </div>
+
+        <!-- Page content -->
+        <div class="page-content">
+            <!-- Messages flash -->
+            <div th:if="${successMessage}" class="alert alert-success alert-dismissible fade show mb-3">
+                <i class="bi bi-check-circle me-2"></i>
+                <span th:text="${successMessage}"></span>
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+            <div th:if="${errorMessage}" class="alert alert-danger alert-dismissible fade show mb-3">
+                <i class="bi bi-exclamation-circle me-2"></i>
+                <span th:text="${errorMessage}"></span>
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+
+            <!-- Contenu de la page -->
+            <th:block th:replace="${content}"/>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+</th:block>
+
+</body>
+</html>

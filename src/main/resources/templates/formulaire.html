@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="fr"
+      xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{fragments/layout :: layout(~{::main-content},
+          ${modeEdition ? 'Modifier la transaction' : 'Nouvelle transaction'},
+          ${modeEdition ? 'Édition du formulaire' : 'Saisie d''une opération'})}">
+<head><title>Formulaire Transaction</title></head>
+<body>
+
+<th:block th:fragment="main-content">
+
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <div class="card">
+            <div class="card-header">
+                <i class="bi bi-pencil-square me-2"
+                   th:classappend="${modeEdition ? '' : 'bi-plus-circle me-2'}"></i>
+                <span th:text="${modeEdition ? 'Modifier la transaction' : 'Nouvelle transaction'}">Formulaire</span>
+            </div>
+            <div class="card-body p-4">
+
+                <!-- Action = POST vers /nouveau ou /{id}/modifier -->
+                <form th:action="${modeEdition ? '/transactions/' + transactionId + '/modifier' : '/transactions/nouveau'}"
+                      th:object="${transactionDTO}"
+                      method="post"
+                      enctype="multipart/form-data"
+                      novalidate>
+
+                    <div class="row g-3">
+
+                        <!-- ── MONTANT ── -->
+                        <div class="col-md-4">
+                            <label class="form-label" for="montant">Montant <span class="text-danger">*</span></label>
+                            <div class="input-group">
+                                <input type="number"
+                                       id="montant"
+                                       th:field="*{montant}"
+                                       step="0.01" min="0.01"
+                                       class="form-control"
+                                       th:classappend="${#fields.hasErrors('montant')} ? 'is-invalid' : ''"
+                                       placeholder="0.00"/>
+                                <span class="input-group-text"><i class="bi bi-currency-exchange"></i></span>
+                            </div>
+                            <div class="invalid-feedback"
+                                 th:if="${#fields.hasErrors('montant')}"
+                                 th:errors="*{montant}">Erreur montant</div>
+                        </div>
+
+                        <!-- ── DEVISE ── -->
+                        <div class="col-md-4">
+                            <label class="form-label" for="devise">Devise <span class="text-danger">*</span></label>
+                            <select id="devise" th:field="*{devise}" class="form-select"
+                                    th:classappend="${#fields.hasErrors('devise')} ? 'is-invalid' : ''">
+                                <option value="">-- Choisir --</option>
+                                <option th:each="d : ${devises}"
+                                        th:value="${d.name()}"
+                                        th:text="${d.libelle}"></option>
+                            </select>
+                            <div class="invalid-feedback"
+                                 th:if="${#fields.hasErrors('devise')}"
+                                 th:errors="*{devise}">Erreur devise</div>
+                        </div>
+
+                        <!-- ── TYPE ── -->
+                        <div class="col-md-4">
+                            <label class="form-label" for="type">Type <span class="text-danger">*</span></label>
+                            <select id="type" th:field="*{type}" class="form-select"
+                                    th:classappend="${#fields.hasErrors('type')} ? 'is-invalid' : ''">
+                                <option value="">-- Choisir --</option>
+                                <option th:each="t : ${types}"
+                                        th:value="${t.name()}"
+                                        th:text="${t.name()}"></option>
+                            </select>
+                            <div class="invalid-feedback"
+                                 th:if="${#fields.hasErrors('type')}"
+                                 th:errors="*{type}">Erreur type</div>
+                        </div>
+
+                        <!-- ── PERSONNE ── -->
+                        <div class="col-12">
+                            <label class="form-label">Personne <span class="text-danger">*</span></label>
+                            <div class="d-flex gap-3 mb-2">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="radio" name="modePersonne"
+                                           id="modeExistante" value="existante" checked
+                                           onclick="togglePersonne('existante')"/>
+                                    <label class="form-check-label" for="modeExistante">Personne existante</label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="radio" name="modePersonne"
+                                           id="modeNouvelle" value="nouvelle"
+                                           onclick="togglePersonne('nouvelle')"/>
+                                    <label class="form-check-label" for="modeNouvelle">Nouvelle personne</label>
+                                </div>
+                            </div>
+
+                            <!-- Sélection existante -->
+                            <div id="panelExistante">
+                                <select id="personneId" th:field="*{personneId}" class="form-select">
+                                    <option value="">-- Sélectionner --</option>
+                                    <option th:each="p : ${personnes}"
+                                            th:value="${p.id}"
+                                            th:text="${p.nom + (p.telephone != null and !#strings.isEmpty(p.telephone) ? ' - N° : ' + p.telephone : '')}">
+                                    </option>
+                                </select>
+                            </div>
+
+                            <!-- Saisie nouvelle personne -->
+                            <div id="panelNouvelle" style="display:none">
+                                <div class="row g-2">
+                                    <div class="col-md-6">
+                                        <input type="text" th:field="*{nouveauNom}" class="form-control"
+                                               placeholder="Nom *"/>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <input type="text" th:field="*{nouveauTelephone}" class="form-control"
+                                               placeholder="Numéro de téléphone"/>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- ── DATE ── -->
+                        <div class="col-md-6">
+                            <label class="form-label" for="date">Date <span class="text-danger">*</span></label>
+                            <input type="date"
+                                   id="date"
+                                   th:field="*{date}"
+                                   class="form-control"
+                                   th:classappend="${#fields.hasErrors('date')} ? 'is-invalid' : ''"/>
+                            <div class="invalid-feedback"
+                                 th:if="${#fields.hasErrors('date')}"
+                                 th:errors="*{date}">Erreur date</div>
+                        </div>
+
+                        <!-- ── CANAL ── -->
+                        <div class="col-md-6">
+                            <label class="form-label" for="canal">Canal</label>
+                            <select id="canal" th:field="*{canal}" class="form-select">
+                                <option value="">-- Choisir --</option>
+                                <option th:each="c : ${canaux}"
+                                        th:value="${c.name()}"
+                                        th:text="${c.libelle}"></option>
+                            </select>
+                        </div>
+
+                        <!-- ── DESCRIPTION ── -->
+                        <div class="col-md-6">
+                            <label class="form-label" for="description">Description</label>
+                            <input type="text"
+                                   id="description"
+                                   th:field="*{description}"
+                                   class="form-control"
+                                   placeholder="Motif, référence…"/>
+                        </div>
+
+                        <!-- ── PREUVE ── -->
+                        <div class="col-12">
+                            <label class="form-label" for="preuveFile">Preuve (image)</label>
+                            <input type="file"
+                                   id="preuveFile"
+                                   name="preuveFile"
+                                   class="form-control"
+                                   accept="image/*,.pdf"/>
+                            <div class="form-text text-muted">
+                                <i class="bi bi-info-circle me-1"></i>
+                                Formats acceptés : JPG, PNG, PDF. Taille max : 5 Mo.
+                            </div>
+                        </div>
+
+                    </div>
+
+                    <!-- ── BOUTONS ── -->
+                    <div class="d-flex gap-2 mt-4 pt-3 border-top">
+                        <button type="submit" class="btn btn-primary-custom">
+                            <i class="bi bi-floppy me-1"></i>
+                            <span th:text="${modeEdition ? 'Enregistrer les modifications' : 'Créer la transaction'}">Enregistrer</span>
+                        </button>
+                        <a th:href="@{/transactions}" class="btn btn-outline-secondary">
+                            <i class="bi bi-arrow-left me-1"></i>Annuler
+                        </a>
+                    </div>
+
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function togglePersonne(mode) {
+    document.getElementById('panelExistante').style.display = (mode === 'existante') ? '' : 'none';
+    document.getElementById('panelNouvelle').style.display  = (mode === 'nouvelle')  ? '' : 'none';
+    if (mode === 'existante') {
+        document.getElementById('personneId').removeAttribute('disabled');
+        document.querySelectorAll('#panelNouvelle input').forEach(i => i.value = '');
+    } else {
+        document.getElementById('personneId').value = '';
+        document.getElementById('personneId').setAttribute('disabled', 'disabled');
+    }
+}
+</script>
+
+</th:block>
+</body>
+</html>

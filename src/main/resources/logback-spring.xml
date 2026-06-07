@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+
+    <property name="CONSOLE_PATTERN" value="%-5level %logger{36} - %msg%n"/>
+
+    <!-- Configuration spéciale DEV -->
+    <springProfile name="dev">
+
+        <appender name="CONSOLE_DEV" class="ch.qos.logback.core.ConsoleAppender">
+            <encoder>
+                <pattern>${CONSOLE_PATTERN}</pattern>
+                <charset>UTF-8</charset>
+            </encoder>
+
+            <!-- Bloquer uniquement les logs INFO -->
+            <filter class="ch.qos.logback.classic.filter.LevelFilter">
+                <level>INFO</level>
+                <onMatch>DENY</onMatch>
+                <onMismatch>NEUTRAL</onMismatch>
+            </filter>
+        </appender>
+
+        <!-- Ton application : DEBUG visible, INFO caché -->
+        <logger name="fr.zenabkissir.chapchap" level="DEBUG" additivity="false">
+            <appender-ref ref="CONSOLE_DEV"/>
+        </logger>
+
+        <!-- Librairies externes réduites -->
+        <logger name="org.springframework" level="WARN"/>
+        <logger name="org.springframework.web" level="ERROR"/>
+        <logger name="org.hibernate" level="WARN"/>
+        <logger name="org.hibernate.SQL" level="ERROR"/>
+        <logger name="org.apache.catalina" level="WARN"/>
+        <logger name="com.zaxxer.hikari" level="WARN"/>
+
+        <root level="WARN">
+            <appender-ref ref="CONSOLE_DEV"/>
+        </root>
+
+    </springProfile>
+
+    <!-- Configuration hors DEV : normale -->
+    <springProfile name="!dev">
+
+        <appender name="CONSOLE_DEFAULT" class="ch.qos.logback.core.ConsoleAppender">
+            <encoder>
+                <pattern>%d{yyyy-MM-dd HH:mm:ss} %-5level %logger{36} - %msg%n</pattern>
+                <charset>UTF-8</charset>
+            </encoder>
+        </appender>
+
+        <logger name="fr.zenabkissir.chapchap" level="INFO"/>
+
+        <root level="INFO">
+            <appender-ref ref="CONSOLE_DEFAULT"/>
+        </root>
+
+    </springProfile>
+
+</configuration>

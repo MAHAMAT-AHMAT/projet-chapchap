@@ -1,0 +1,57 @@
+=== INFORMATIONS DU SIMULATEUR CHAPCHAP ===
+
+ChapChap est un service de transfert d'argent international couvrant les corridors
+Tchad-Maroc, Maroc-Tchad, France-Tchad et Tchad-France.
+
+=== TAUX DE CHANGE ET COMMISSIONS ===
+
+1. TRANSFERT TCHAD → MAROC
+   Devise source  : FCFA (Franc CFA tchadien)
+   Devise destination : MAD (Dirham marocain)
+   Taux de change : 64 FCFA = 1 MAD
+   Commission     : 3 % prélevée sur le montant envoyé
+   Formule reçu   : montant_MAD = montant_FCFA × (1 − 0,03) / 64
+   Formule envoyé : montant_FCFA = montant_MAD × 64 / 0,97
+   Exemple        : Envoyer 10 000 FCFA → (10 000 × 0,97) / 64 ≈ 152 MAD reçus
+
+2. TRANSFERT MAROC → TCHAD
+   Devise source  : MAD (Dirham marocain)
+   Devise destination : FCFA (Franc CFA)
+   Taux de change : 1 MAD = 61 FCFA
+   Commission     : aucune commission explicite (incluse dans le taux)
+   Formule reçu   : montant_FCFA = montant_MAD × 61
+   Formule envoyé : montant_MAD = montant_FCFA / 61
+   Exemple        : Envoyer 100 MAD → 100 × 61 = 6 100 FCFA reçus
+
+3. TRANSFERT FRANCE → TCHAD
+   Devise source  : EUR (Euro)
+   Devise destination : FCFA (Franc CFA)
+   Taux de change : 1 EUR = 655 FCFA
+   Commission     : aucune commission explicite (incluse dans le taux)
+   Formule reçu   : montant_FCFA = montant_EUR × 655
+   Formule envoyé : montant_EUR = montant_FCFA / 655
+   Exemple        : Envoyer 50 EUR → 50 × 655 = 32 750 FCFA reçus
+
+4. TRANSFERT TCHAD → FRANCE
+   Devise source  : FCFA (Franc CFA)
+   Devise destination : EUR (Euro)
+   Taux de change : 700 FCFA = 1 EUR
+   Commission     : aucune commission explicite (incluse dans le taux)
+   Formule reçu   : montant_EUR = montant_FCFA / 700
+   Formule envoyé : montant_FCFA = montant_EUR × 700
+   Exemple        : Envoyer 70 000 FCFA → 70 000 / 700 = 100 EUR reçus
+
+=== DEVISES SUPPORTÉES ===
+FCFA : Franc CFA (Tchad)
+MAD  : Dirham marocain (Maroc)
+EUR  : Euro (France)
+
+=== RÈGLES DE CALCUL DU SIMULATEUR ===
+- Arrondi standard : si la décimale ≥ 0,5, on arrondit à l'entier supérieur.
+- Les montants s'affichent avec des espaces comme séparateurs de milliers (ex : 1 000 000).
+- Le calcul est bidirectionnel : on peut saisir le montant envoyé OU le montant reçu.
+
+=== CONTACTS CHAPCHAP (WhatsApp) ===
+France : +33 6 05 96 53 24
+Tchad  : +235 65 28 50 50
+Maroc  : +212 609-544476

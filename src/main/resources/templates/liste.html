@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="fr"
+      xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{fragments/layout :: layout(~{::main-content}, 'Liste des transactions', 'Toutes vos opérations')}">
+<head><title>Transactions</title></head>
+<body>
+
+<th:block th:fragment="main-content">
+
+<!-- ─── FILTRES ─── -->
+<div class="card mb-4">
+    <div class="card-body py-3">
+        <form th:action="@{/transactions}" method="get" class="row g-2 align-items-end">
+            <div class="col-6 col-md-2">
+                <label class="form-label mb-1">Statut</label>
+                <select name="statut" class="form-select form-select-sm">
+                    <option value="">Tous</option>
+                    <option th:each="s : ${statuts}"
+                            th:value="${s.name()}"
+                            th:text="${s.name()}"
+                            th:selected="${s.name() == selectedStatut}">
+                    </option>
+                </select>
+            </div>
+            <div class="col-6 col-md-2">
+                <label class="form-label mb-1">Devise</label>
+                <select name="devise" class="form-select form-select-sm">
+                    <option value="">Toutes</option>
+                    <option th:each="d : ${devises}"
+                            th:value="${d.name()}"
+                            th:text="${d.libelle}"
+                            th:selected="${d.name() == selectedDevise}">
+                    </option>
+                </select>
+            </div>
+            <div class="col-6 col-md-2">
+                <label class="form-label mb-1">Du</label>
+                <input type="date" name="dateDebut" class="form-control form-control-sm"
+                       th:value="${dateDebut}"/>
+            </div>
+            <div class="col-6 col-md-2">
+                <label class="form-label mb-1">Au</label>
+                <input type="date" name="dateFin" class="form-control form-control-sm"
+                       th:value="${dateFin}"/>
+            </div>
+            <div class="col-12 col-md-4 d-flex gap-2 flex-wrap">
+                <button type="submit" class="btn btn-sm btn-primary-custom">
+                    <i class="bi bi-funnel me-1"></i>Filtrer
+                </button>
+                <a th:href="@{/transactions}" class="btn btn-sm btn-outline-secondary">
+                    <i class="bi bi-x-lg me-1"></i>Réinitialiser
+                </a>
+                <button type="submit" formaction="/transactions/facture"
+                        class="btn btn-sm btn-outline-primary" title="Télécharger la facture PDF avec les filtres actifs">
+                    <i class="bi bi-file-earmark-pdf me-1"></i>Facture PDF
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- ─── TABLEAU ─── -->
+<div class="card">
+    <div class="card-header d-flex justify-content-between align-items-center flex-wrap gap-2">
+        <span><i class="bi bi-list-ul me-2"></i>Transactions</span>
+        <span class="badge bg-secondary" th:text="${transactions.size()} + ' résultat(s)'"></span>
+    </div>
+
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-custom mb-0">
+                <thead>
+                    <tr>
+                        <th class="ps-3">Date</th>
+                        <th>Type</th>
+                        <th>Montant</th>
+                        <th>Personne</th>
+                        <th>Canal</th>
+                        <th>Statut</th>
+                        <th>Preuve</th>
+                        <th class="pe-3 text-end">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:if="${#lists.isEmpty(transactions)}">
+                        <td colspan="8" class="text-center text-muted py-5">
+                            <i class="bi bi-inbox fs-2 d-block mb-2 opacity-30"></i>
+                            Aucune transaction trouvée
+                        </td>
+                    </tr>
+
+                    <tr th:each="t : ${transactions}">
+                        <!-- Date -->
+                        <td class="ps-3">
+                            <div th:text="${#temporals.format(t.createdAt, 'dd/MM/yyyy')}">01/01/2024</div>
+                            <small class="text-muted" th:text="${#temporals.format(t.createdAt, 'HH:mm')}">10:30</small>
+                        </td>
+
+                        <!-- Type -->
+                        <td>
+                            <span th:if="${t.type.name() == 'ENTREE'}"
+                                  class="badge text-bg-success bg-opacity-15 text-success">
+                                <i class="bi bi-arrow-down-circle me-1"></i>ENTRÉE
+                            </span>
+                            <span th:if="${t.type.name() == 'SORTIE'}"
+                                  class="badge text-bg-danger bg-opacity-15 text-danger">
+                                <i class="bi bi-arrow-up-circle me-1"></i>SORTIE
+                            </span>
+                        </td>
+
+                        <!-- Montant -->
+                        <td style="white-space:nowrap;">
+                            <span th:classappend="${t.type.name() == 'ENTREE'} ? 'montant-entree' : 'montant-sortie'"
+                                  th:text="${#numbers.formatDecimal(t.montant, 1, 'WHITESPACE', 2, 'COMMA') + ' ' + t.devise.libelle}">
+                                0,00 MAD
+                            </span>
+                        </td>
+
+                        <!-- Personne -->
+                        <td>
+                            <div th:if="${t.personne != null}">
+                                <div class="fw-medium" th:text="${t.personne.nom}">Nom</div>
+                                <small class="text-muted" th:text="${t.personne.telephone}">---</small>
+                            </div>
+                            <span th:if="${t.personne == null}" class="text-muted">—</span>
+                        </td>
+
+                        <!-- Canal -->
+                        <td><small class="text-muted" th:text="${t.canal ?: '—'}">—</small></td>
+
+                        <!-- Statut -->
+                        <td>
+                            <span th:if="${t.statut.name() == 'EN_ATTENTE'}"
+                                  class="badge badge-en-attente rounded-pill px-2">
+                                <i class="bi bi-clock me-1"></i>En attente
+                            </span>
+                            <span th:if="${t.statut.name() == 'CONFIRMEE'}"
+                                  class="badge badge-confirmee rounded-pill px-2">
+                                <i class="bi bi-check-circle me-1"></i>Confirmée
+                            </span>
+                            <span th:if="${t.statut.name() == 'REJETEE'}"
+                                  class="badge badge-rejetee rounded-pill px-2">
+                                <i class="bi bi-x-circle me-1"></i>Rejetée
+                            </span>
+                        </td>
+
+                        <!-- Preuve miniature -->
+                        <td>
+                            <div th:if="${t.preuve != null}" class="text-center">
+                                <a th:href="@{'/uploads/preuves/' + ${t.preuve.nomFichier}}" target="_blank">
+                                    <img class="preuve-thumb"
+                                         th:src="@{'/uploads/preuves/' + ${t.preuve.nomFichier}}"
+                                         onerror="this.style.display='none';this.nextElementSibling.classList.remove('d-none');"
+                                         alt="Preuve"/>
+                                    <i class="bi bi-file-earmark-pdf fs-2 text-danger d-none"></i>
+                                </a>
+                                <a th:href="@{'/uploads/preuves/' + ${t.preuve.nomFichier}}" target="_blank"
+                                   class="btn btn-sm btn-outline-secondary mt-1 d-block"
+                                   style="font-size:.7rem; padding:.1rem .35rem;">
+                                    <i class="bi bi-eye me-1"></i>Voir
+                                </a>
+                            </div>
+                            <span th:if="${t.preuve == null}" class="text-muted small fst-italic">Aucune</span>
+                        </td>
+
+                        <!-- Actions -->
+                        <td class="pe-3 text-end">
+                            <div class="d-flex gap-1 justify-content-end flex-wrap">
+
+                                <!-- Reçu PDF (tous les rôles) -->
+                                <a th:href="@{/transactions/{id}/recu(id=${t.id})}"
+                                   class="btn btn-sm btn-outline-secondary" title="Télécharger le reçu PDF">
+                                    <i class="bi bi-file-earmark-arrow-down"></i>
+                                </a>
+
+                                <!-- MANAGER : lecture seule -->
+                                <span th:if="${userRole != null and userRole.name() == 'MANAGER'}"
+                                      class="text-muted small align-self-center">
+                                    <i class="bi bi-eye"></i>
+                                </span>
+
+                                <!-- Modifier (EN_ATTENTE, pas MANAGER) -->
+                                <a th:if="${t.statut.name() == 'EN_ATTENTE' and userRole != null and userRole.name() != 'MANAGER'}"
+                                   th:href="@{/transactions/{id}/modifier(id=${t.id})}"
+                                   class="btn btn-sm btn-outline-primary" title="Modifier">
+                                    <i class="bi bi-pencil"></i>
+                                </a>
+
+                                <!-- Confirmer (EN_ATTENTE, ADMIN + USER de bon pays) -->
+                                <form th:if="${t.statut.name() == 'EN_ATTENTE' and userRole != null and userRole.name() != 'MANAGER'}"
+                                      th:action="@{/transactions/{id}/valider(id=${t.id})}"
+                                      method="post" class="d-inline"
+                                      onsubmit="return confirm('Confirmer cette transaction ?')">
+                                    <button type="submit" class="btn btn-sm btn-outline-success" title="Confirmer">
+                                        <i class="bi bi-check-lg"></i>
+                                    </button>
+                                </form>
+
+                                <!-- Rejeter (ADMIN uniquement) -->
+                                <form th:if="${t.statut.name() == 'EN_ATTENTE' and userRole != null and userRole.name() == 'ADMIN'}"
+                                      th:action="@{/transactions/{id}/rejeter(id=${t.id})}"
+                                      method="post" class="d-inline"
+                                      onsubmit="return confirm('Rejeter cette transaction ?')">
+                                    <button type="submit" class="btn btn-sm btn-outline-warning" title="Rejeter">
+                                        <i class="bi bi-x-lg"></i>
+                                    </button>
+                                </form>
+
+                                <!-- Badge CONFIRMÉE verrou (pas MANAGER) -->
+                                <span th:if="${t.statut.name() == 'CONFIRMEE' and userRole != null and userRole.name() != 'MANAGER'}"
+                                      class="badge badge-confirmee align-self-center">
+                                    <i class="bi bi-lock-fill"></i>
+                                </span>
+
+                                <!-- Supprimer (pas MANAGER) -->
+                                <form th:if="${userRole != null and userRole.name() != 'MANAGER'}"
+                                      th:action="@{/transactions/{id}/supprimer(id=${t.id})}"
+                                      method="post" class="d-inline"
+                                      onsubmit="return confirm('Supprimer définitivement cette transaction ?')">
+                                    <button type="submit" class="btn btn-sm btn-outline-danger" title="Supprimer">
+                                        <i class="bi bi-trash"></i>
+                                    </button>
+                                </form>
+                            </div>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+</th:block>
+</body>
+</html>

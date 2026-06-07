@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="fr"
+      xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{fragments/layout :: layout(~{::main-content}, 'Dashboard', 'Vue d\'ensemble des transferts')}">
+<head><title>Dashboard</title></head>
+<body>
+
+<th:block th:fragment="main-content">
+
+<!-- ─── FILTRE DATE ─── -->
+<div class="card mb-4">
+    <div class="card-body py-3">
+        <form th:action="@{/transactions/dashboard}" method="get"
+              class="row g-2 align-items-end">
+            <div class="col-6 col-md-auto">
+                <label class="form-label mb-1">Période du</label>
+                <input type="date" name="dateDebut" class="form-control form-control-sm"
+                       th:value="${dateDebut}"/>
+            </div>
+            <div class="col-6 col-md-auto">
+                <label class="form-label mb-1">au</label>
+                <input type="date" name="dateFin" class="form-control form-control-sm"
+                       th:value="${dateFin}"/>
+            </div>
+            <div class="col-12 col-md-auto d-flex gap-2">
+                <button type="submit" class="btn btn-sm btn-primary-custom">
+                    <i class="bi bi-funnel me-1"></i>Filtrer
+                </button>
+                <a th:href="@{/transactions/dashboard}" class="btn btn-sm btn-outline-secondary">
+                    <i class="bi bi-x-lg me-1"></i>Tout
+                </a>
+            </div>
+            <div class="col-12 col-md-auto ms-md-auto align-self-end">
+                <small class="text-muted">
+                    <i class="bi bi-info-circle me-1"></i>
+                    Soldes sur transactions <strong>CONFIRMÉES</strong> uniquement
+                </small>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- ─── COMPTEURS STATUT ─── -->
+<div class="row g-3 mb-4">
+    <div class="col-12 col-md-4">
+        <div class="stat-card stat-warning">
+            <div class="stat-label">En attente</div>
+            <div class="stat-value" th:text="${nbEnAttente}">0</div>
+            <i class="bi bi-clock stat-icon"></i>
+        </div>
+    </div>
+    <div class="col-12 col-md-4">
+        <div class="stat-card stat-success">
+            <div class="stat-label">Confirmées</div>
+            <div class="stat-value" th:text="${nbConfirmees}">0</div>
+            <i class="bi bi-check-circle stat-icon"></i>
+        </div>
+    </div>
+    <div class="col-12 col-md-4">
+        <div class="stat-card stat-danger">
+            <div class="stat-label">Rejetées</div>
+            <div class="stat-value" th:text="${nbRejetees}">0</div>
+            <i class="bi bi-x-circle stat-icon"></i>
+        </div>
+    </div>
+</div>
+
+<!-- ─── INDICATEURS MAD / XAF ─── -->
+<div class="row g-4 mb-4">
+
+    <!-- MAD (caché pour USER_TCHAD) -->
+    <div class="col-12 col-lg-6" th:if="${userPays == null or userPays.name() == 'MAROC'}">
+        <div class="devise-section">
+            <div class="devise-header">
+                <i class="bi bi-currency-exchange"></i>
+                Dirham marocain (MAD)
+            </div>
+            <div class="devise-body">
+                <div class="row g-3">
+                    <div class="col-6">
+                        <div class="p-3 rounded" style="background:#f0fdf4; border:1px solid #bbf7d0">
+                            <div style="font-size:.7rem;text-transform:uppercase;letter-spacing:1px;color:#16a34a;font-weight:600">
+                                Total Entrées
+                            </div>
+                            <div class="montant-entree fs-6 mt-1"
+                                 th:text="${#numbers.formatDecimal(entreesMAD, 1, 'WHITESPACE', 2, 'COMMA') + ' MAD'}">
+                                0,00 MAD
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <div class="p-3 rounded" style="background:#fff5f5; border:1px solid #fed7d7">
+                            <div style="font-size:.7rem;text-transform:uppercase;letter-spacing:1px;color:#e53e3e;font-weight:600">
+                                Total Sorties
+                            </div>
+                            <div class="montant-sortie fs-6 mt-1"
+                                 th:text="${#numbers.formatDecimal(sortiesMAD, 1, 'WHITESPACE', 2, 'COMMA') + ' MAD'}">
+                                0,00 MAD
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="solde-display">
+                    <div class="solde-label">Solde MAD</div>
+                    <div class="solde-value"
+                         th:classappend="${soldeMAD >= 0} ? 'solde-positive' : 'solde-negative'"
+                         th:text="${(soldeMAD >= 0 ? '+' : '') + #numbers.formatDecimal(soldeMAD, 1, 'WHITESPACE', 2, 'COMMA') + ' MAD'}">
+                        0,00 MAD
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- XAF (caché pour USER_MAROC) -->
+    <div class="col-12 col-lg-6" th:if="${userPays == null or userPays.name() == 'TCHAD'}">
+        <div class="devise-section">
+            <div class="devise-header" style="background:#2d5a3d">
+                <i class="bi bi-currency-exchange"></i>
+                Franc CFA (FCFA)
+            </div>
+            <div class="devise-body">
+                <div class="row g-3">
+                    <div class="col-6">
+                        <div class="p-3 rounded" style="background:#f0fdf4; border:1px solid #bbf7d0">
+                            <div style="font-size:.7rem;text-transform:uppercase;letter-spacing:1px;color:#16a34a;font-weight:600">
+                                Total Entrées
+                            </div>
+                            <div class="montant-entree fs-6 mt-1"
+                                 th:text="${#numbers.formatDecimal(entreesXAF, 1, 'WHITESPACE', 2, 'COMMA') + ' FCFA'}">
+                                0,00 FCFA
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <div class="p-3 rounded" style="background:#fff5f5; border:1px solid #fed7d7">
+                            <div style="font-size:.7rem;text-transform:uppercase;letter-spacing:1px;color:#e53e3e;font-weight:600">
+                                Total Sorties
+                            </div>
+                            <div class="montant-sortie fs-6 mt-1"
+                                 th:text="${#numbers.formatDecimal(sortiesXAF, 1, 'WHITESPACE', 2, 'COMMA') + ' FCFA'}">
+                                0,00 FCFA
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="solde-display">
+                    <div class="solde-label">Solde FCFA</div>
+                    <div class="solde-value"
+                         th:classappend="${soldeXAF >= 0} ? 'solde-positive' : 'solde-negative'"
+                         th:text="${(soldeXAF >= 0 ? '+' : '') + #numbers.formatDecimal(soldeXAF, 1, 'WHITESPACE', 2, 'COMMA') + ' FCFA'}">
+                        0,00 FCFA
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ─── DERNIÈRES TRANSACTIONS ─── -->
+<div class="card">
+    <div class="card-header d-flex justify-content-between align-items-center flex-wrap gap-2">
+        <span><i class="bi bi-clock-history me-2"></i>10 dernières transactions</span>
+        <a th:href="@{/transactions}" class="btn btn-sm btn-outline-secondary">
+            Voir tout <i class="bi bi-arrow-right ms-1"></i>
+        </a>
+    </div>
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-custom mb-0">
+                <thead>
+                    <tr>
+                        <th class="ps-3">Date</th>
+                        <th>Type</th>
+                        <th>Montant</th>
+                        <th>Personne</th>
+                        <th class="pe-3">Statut</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:if="${#lists.isEmpty(dernieresTransactions)}">
+                        <td colspan="5" class="text-center text-muted py-4">
+                            <i class="bi bi-inbox d-block mb-1 opacity-30 fs-4"></i>
+                            Aucune transaction
+                        </td>
+                    </tr>
+                    <tr th:each="t : ${dernieresTransactions}">
+                        <td class="ps-3">
+                            <span th:text="${#temporals.format(t.createdAt, 'dd/MM/yyyy')}">—</span>
+                        </td>
+                        <td>
+                            <span th:if="${t.type.name() == 'ENTREE'}"
+                                  class="badge text-bg-success bg-opacity-15 text-success">
+                                <i class="bi bi-arrow-down-circle me-1"></i>ENTRÉE
+                            </span>
+                            <span th:if="${t.type.name() == 'SORTIE'}"
+                                  class="badge text-bg-danger bg-opacity-15 text-danger">
+                                <i class="bi bi-arrow-up-circle me-1"></i>SORTIE
+                            </span>
+                        </td>
+                        <td style="white-space:nowrap;">
+                            <span th:classappend="${t.type.name() == 'ENTREE'} ? 'montant-entree' : 'montant-sortie'"
+                                  th:text="${#numbers.formatDecimal(t.montant, 1, 'WHITESPACE', 2, 'COMMA') + ' ' + t.devise.libelle}">
+                                0,00
+                            </span>
+                        </td>
+                        <td>
+                            <span th:if="${t.personne != null}" th:text="${t.personne.nom}">—</span>
+                            <span th:if="${t.personne == null}" class="text-muted">—</span>
+                        </td>
+                        <td class="pe-3">
+                            <span th:if="${t.statut.name() == 'EN_ATTENTE'}"  class="badge badge-en-attente rounded-pill">En attente</span>
+                            <span th:if="${t.statut.name() == 'CONFIRMEE'}"   class="badge badge-confirmee rounded-pill">Confirmée</span>
+                            <span th:if="${t.statut.name() == 'REJETEE'}"     class="badge badge-rejetee rounded-pill">Rejetée</span>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+</th:block>
+</body>
+</html>

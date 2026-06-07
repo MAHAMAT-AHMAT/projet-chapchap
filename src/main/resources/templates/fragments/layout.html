@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="fr"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+      th:fragment="layout(content, pageTitle, pageSubtitle)">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title th:text="${pageTitle != null ? pageTitle + ' — ChapChap' : 'ChapChap'}">ChapChap</title>
+    <link rel="stylesheet" th:href="@{/css/bootstrap.min.css}"/>
+    <link rel="stylesheet" th:href="@{/css/bootstrap-icons.min.css}"/>
+    <style>
+        :root {
+            --color-primary: #1e3a5f;
+            --color-accent:  #e8a020;
+            --sidebar-width: 240px;
+        }
+        body { background:#f4f6fb; font-family:'Segoe UI',system-ui,sans-serif; min-height:100vh; }
+
+        /* SIDEBAR */
+        .sidebar { position:fixed; top:0; left:0; width:var(--sidebar-width); height:100vh;
+            background:var(--color-primary); color:#fff; display:flex; flex-direction:column;
+            z-index:200; box-shadow:4px 0 12px rgba(0,0,0,.15); transition:transform .25s ease; }
+        .sidebar-brand { padding:1.5rem 1.25rem; border-bottom:1px solid rgba(255,255,255,.12); }
+        .sidebar-brand .brand-name { font-size:1.25rem; font-weight:700; letter-spacing:.5px; }
+        .sidebar-brand .brand-sub  { font-size:.7rem; color:rgba(255,255,255,.55); text-transform:uppercase; letter-spacing:1.5px; }
+        .sidebar-nav { flex:1; padding:1rem 0; overflow-y:auto; }
+        .nav-item-label { font-size:.65rem; text-transform:uppercase; letter-spacing:1.5px;
+            color:rgba(255,255,255,.4); padding:.5rem 1.25rem .25rem; }
+        .sidebar-nav .nav-link { color:rgba(255,255,255,.78); padding:.6rem 1.25rem; display:flex;
+            align-items:center; gap:.65rem; font-size:.875rem; transition:background .18s, color .18s;
+            border-left:3px solid transparent; text-decoration:none; }
+        .sidebar-nav .nav-link:hover,
+        .sidebar-nav .nav-link.active { background:rgba(255,255,255,.1); color:#fff; }
+        .sidebar-nav .nav-link.active { border-left-color:var(--color-accent); }
+        .sidebar-nav .nav-link i { font-size:1rem; min-width:1.25rem; }
+
+        /* OVERLAY (mobile) */
+        .sidebar-overlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,.5); z-index:150; }
+        .sidebar-overlay.open { display:block; }
+
+        /* MAIN */
+        .main-wrapper { margin-left:var(--sidebar-width); min-height:100vh; display:flex; flex-direction:column; }
+        .topbar { background:#fff; border-bottom:1px solid #e2e8f0; padding:.75rem 1.75rem;
+            display:flex; align-items:center; justify-content:space-between;
+            position:sticky; top:0; z-index:90; }
+        .topbar-title { font-weight:600; font-size:1rem; color:#1a202c; }
+        .topbar-sub   { font-size:.78rem; color:#718096; margin-top:1px; }
+        .page-content { padding:1.75rem; flex:1; }
+
+        /* HAMBURGER */
+        .sidebar-toggle { display:none; background:none; border:none; color:var(--color-primary);
+                          font-size:1.4rem; padding:0 .25rem; cursor:pointer; line-height:1; }
+
+        /* CARDS */
+        .card { border:none; border-radius:.75rem; box-shadow:0 1px 4px rgba(0,0,0,.07); }
+        .card-header { background:#fff; border-bottom:1px solid #edf2f7;
+            border-radius:.75rem .75rem 0 0 !important; padding:1rem 1.25rem;
+            font-weight:600; font-size:.9rem; color:var(--color-primary); }
+
+        /* STAT CARDS */
+        .stat-card { border-radius:.75rem; padding:1.25rem 1.5rem; color:#fff; position:relative; overflow:hidden; }
+        .stat-card::after { content:''; position:absolute; right:-20px; top:-20px;
+            width:100px; height:100px; border-radius:50%; background:rgba(255,255,255,.08); }
+        .stat-card .stat-label { font-size:.72rem; text-transform:uppercase; letter-spacing:1px; opacity:.85; }
+        .stat-card .stat-value { font-size:1.6rem; font-weight:700; margin:.25rem 0; }
+        .stat-card .stat-icon  { font-size:2rem; opacity:.25; position:absolute; right:1.25rem; bottom:.75rem; }
+        .stat-success { background:#198754; }
+        .stat-danger  { background:#dc3545; }
+        .stat-warning { background:#ffc107; color:#1a202c; }
+
+        /* BADGES */
+        .badge-en-attente { background-color:#fef3c7; color:#92400e; border:1px solid #fde68a; }
+        .badge-confirmee  { background-color:#d1fae5; color:#065f46; border:1px solid #a7f3d0; }
+        .badge-rejetee    { background-color:#fee2e2; color:#991b1b; border:1px solid #fecaca; }
+
+        /* TABLE */
+        .table-custom th { font-size:.72rem; text-transform:uppercase; letter-spacing:.8px;
+            color:#718096; font-weight:600; border-bottom:2px solid #edf2f7; background:#fafbfc; }
+        .table-custom td { vertical-align:middle; font-size:.875rem; }
+        .table-custom tbody tr:hover { background:#f7faff; }
+
+        /* BUTTONS */
+        .btn-primary-custom { background:var(--color-primary); border-color:var(--color-primary); color:#fff; }
+        .btn-primary-custom:hover { background:#15294a; border-color:#15294a; color:#fff; }
+
+        /* FORMS */
+        .form-label { font-weight:500; font-size:.85rem; color:#4a5568; }
+        .form-control, .form-select { border-radius:.5rem; border-color:#e2e8f0; font-size:.875rem; }
+        .form-control:focus, .form-select:focus { border-color:var(--color-primary);
+            box-shadow:0 0 0 3px rgba(30,58,95,.12); }
+
+        /* MONTANTS */
+        .montant-entree { color:#198754; font-weight:600; }
+        .montant-sortie { color:#dc3545; font-weight:600; }
+
+        /* DEVISE SECTIONS */
+        .devise-section { background:#fff; border-radius:.75rem; box-shadow:0 1px 4px rgba(0,0,0,.07); overflow:hidden; }
+        .devise-header  { background:var(--color-primary); color:#fff; padding:.75rem 1.25rem;
+            font-weight:600; font-size:.9rem; display:flex; align-items:center; gap:.5rem; }
+        .devise-body { padding:1.25rem; }
+        .solde-display { text-align:center; padding:1rem; background:#f8fafc; border-radius:.5rem; margin-top:.75rem; }
+        .solde-display .solde-label { font-size:.72rem; text-transform:uppercase; letter-spacing:1px; color:#718096; }
+        .solde-display .solde-value { font-size:1.75rem; font-weight:700; }
+        .solde-positive { color:#198754; }
+        .solde-negative { color:#dc3545; }
+
+        /* PREUVE MINIATURE */
+        .preuve-thumb { width:60px; height:50px; object-fit:cover; border-radius:4px;
+                        border:1px solid #e2e8f0; display:block; }
+
+        /* ─── RESPONSIVE MOBILE ─── */
+        @media (max-width: 767.98px) {
+            .sidebar { transform: translateX(-100%); }
+            .sidebar.open { transform: translateX(0); }
+            .main-wrapper { margin-left: 0 !important; }
+            .sidebar-toggle { display: flex; align-items: center; }
+            .topbar { padding: .6rem 1rem; position: sticky; top: 0; }
+            .page-content { padding: 1rem .75rem; }
+            .topbar-sub { display: none; }
+            .stat-card .stat-value { font-size: 1.3rem; }
+        }
+
+        @media (max-width: 575.98px) {
+            .page-content { padding: .75rem .5rem; }
+            .card-header { padding: .75rem 1rem; }
+            .table-custom th, .table-custom td { font-size: .8rem; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- OVERLAY MOBILE -->
+    <div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+    <!-- SIDEBAR -->
+    <aside class="sidebar" id="sidebar">
+        <div class="sidebar-brand">
+            <div class="d-flex align-items-center gap-2 mb-1">
+                <i class="bi bi-arrow-left-right fs-4" style="color:var(--color-accent)"></i>
+                <span class="brand-name">ChapChap</span>
+            </div>
+            <div class="brand-sub">Gestion des transferts</div>
+        </div>
+        <nav class="sidebar-nav">
+            <div class="nav-item-label">Navigation</div>
+            <a th:href="@{/transactions/dashboard}"
+               th:classappend="${currentUri != null and #strings.contains(currentUri,'dashboard')} ? 'active' : ''"
+               class="nav-link">
+                <i class="bi bi-grid-1x2"></i> Dashboard
+            </a>
+            <a th:href="@{/transactions}"
+               th:classappend="${currentUri == '/transactions'} ? 'active' : ''"
+               class="nav-link">
+                <i class="bi bi-list-ul"></i> Transactions
+            </a>
+            <a th:href="@{/transactions/nouveau}" class="nav-link"
+               sec:authorize="hasAnyRole('ADMIN','USER')">
+                <i class="bi bi-plus-circle"></i> Nouvelle transaction
+            </a>
+
+            <a th:href="@{/simulateur}"
+               th:classappend="${currentUri != null and #strings.startsWith(currentUri,'/simulateur')} ? 'active' : ''"
+               class="nav-link">
+                <i class="bi bi-calculator"></i> Simulateur
+            </a>
+
+            <div class="nav-item-label" sec:authorize="hasRole('ADMIN')">Administration</div>
+            <a th:href="@{/admin/users}" sec:authorize="hasRole('ADMIN')"
+               th:classappend="${currentUri != null and #strings.startsWith(currentUri,'/admin')} ? 'active' : ''"
+               class="nav-link">
+                <i class="bi bi-people"></i> Utilisateurs
+            </a>
+        </nav>
+
+        <!-- Utilisateur connecté + déconnexion -->
+        <div style="padding:.75rem 1.25rem; border-top:1px solid rgba(255,255,255,.12);">
+            <div class="d-flex align-items-center gap-2 mb-2">
+                <i class="bi bi-person-circle fs-5"></i>
+                <div>
+                    <div style="font-size:.8rem; font-weight:600;" sec:authentication="name">Utilisateur</div>
+                    <div style="font-size:.65rem; opacity:.55;">
+                        <span sec:authorize="hasRole('ADMIN')">Administrateur</span>
+                        <span sec:authorize="hasRole('MANAGER')">Manager</span>
+                        <span sec:authorize="hasRole('USER')"
+                              th:text="${userPays != null ? 'Utilisateur — ' + userPays.libelle : 'Utilisateur'}">Utilisateur</span>
+                    </div>
+                </div>
+            </div>
+            <form th:action="@{/logout}" method="post">
+                <button type="submit" class="btn btn-sm w-100"
+                        style="background:rgba(255,255,255,.1); color:rgba(255,255,255,.8); border:1px solid rgba(255,255,255,.2); font-size:.78rem;">
+                    <i class="bi bi-box-arrow-right me-1"></i>Déconnexion
+                </button>
+            </form>
+        </div>
+    </aside>
+
+    <!-- MAIN -->
+    <div class="main-wrapper">
+        <div class="topbar">
+            <div class="d-flex align-items-center gap-2">
+                <button class="sidebar-toggle" id="sidebarToggle" aria-label="Menu">
+                    <i class="bi bi-list"></i>
+                </button>
+                <div>
+                    <div class="topbar-title" th:text="${pageTitle}">ChapChap</div>
+                    <div class="topbar-sub" th:text="${pageSubtitle}"></div>
+                </div>
+            </div>
+            <a th:href="@{/transactions/nouveau}" class="btn btn-sm btn-primary-custom"
+               sec:authorize="hasAnyRole('ADMIN','USER')">
+                <i class="bi bi-plus-lg"></i>
+                <span class="d-none d-sm-inline ms-1">Nouvelle transaction</span>
+            </a>
+        </div>
+
+        <div class="page-content">
+            <div th:if="${successMessage}" class="alert alert-success alert-dismissible fade show mb-3">
+                <i class="bi bi-check-circle me-2"></i>
+                <span th:text="${successMessage}"></span>
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+            <div th:if="${errorMessage}" class="alert alert-danger alert-dismissible fade show mb-3">
+                <i class="bi bi-exclamation-circle me-2"></i>
+                <span th:text="${errorMessage}"></span>
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+
+            <th:block th:replace="${content}"/>
+        </div>
+    </div>
+
+    <script th:src="@{/js/bootstrap.bundle.min.js}"></script>
+    <script>
+        (function() {
+            var toggle  = document.getElementById('sidebarToggle');
+            var sidebar = document.getElementById('sidebar');
+            var overlay = document.getElementById('sidebarOverlay');
+            if (!toggle) return;
+            toggle.addEventListener('click', function() {
+                sidebar.classList.toggle('open');
+                overlay.classList.toggle('open');
+            });
+            overlay.addEventListener('click', function() {
+                sidebar.classList.remove('open');
+                overlay.classList.remove('open');
+            });
+        })();
+    </script>
+</body>
+</html>

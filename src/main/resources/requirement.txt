@@ -1,0 +1,260 @@
+Voici les commandes complètes après achat du VPS Ubuntu.
+
+## 0.
+CREATE DATABASE ChapChap;
+CREATE USER 'chapchap_user'@'localhost' IDENTIFIED BY 'MotDePasseFort';
+GRANT ALL PRIVILEGES ON ChapChap.* TO 'chapchap_user'@'localhost';
+FLUSH PRIVILEGES;
+
+
+## 1. Connexion au VPS
+
+```bash
+ssh root@IP_DU_VPS
+```
+
+## 2. Mise à jour
+
+```bash
+apt update && apt upgrade -y
+```
+
+## 3. Installer Java, MySQL, Nginx
+
+```bash
+apt install openjdk-21-jdk mysql-server nginx unzip curl ufw -y
+```
+
+Vérifier Java :
+
+```bash
+java -version
+```
+
+## 4. Sécuriser le firewall
+
+```bash
+ufw allow OpenSSH
+ufw allow 'Nginx Full'
+ufw enable
+ufw status
+```
+
+## 5. Créer la base MySQL
+
+```bash
+mysql
+```
+
+Puis dans MySQL :
+
+```sql
+CREATE DATABASE ChapChap CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+CREATE USER 'chapchap_user'@'localhost' IDENTIFIED BY 'MotDePasseFortIci';
+
+GRANT ALL PRIVILEGES ON ChapChap.* TO 'chapchap_user'@'localhost';
+
+FLUSH PRIVILEGES;
+
+EXIT;
+```
+
+## 6. Créer dossier application
+
+```bash
+mkdir -p /opt/chapchap
+mkdir -p /opt/chapchap/uploads/preuves
+mkdir -p /opt/chapchap/logs
+```
+
+## 7. Envoyer ton JAR depuis ton Mac
+
+Sur ton Mac :
+
+```bash
+scp target/ChapChap.jar root@IP_DU_VPS:/opt/chapchap/ChapChap.jar
+```
+
+## 8. Créer le fichier de configuration production
+
+Sur le VPS :
+
+```bash
+nano /opt/chapchap/application.properties
+```
+
+Colle :
+
+```properties
+server.port=9000
+server.servlet.session.persistent=false
+
+spring.datasource.url=jdbc:mysql://localhost:3306/ChapChap?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true
+spring.datasource.username=chapchap_user
+spring.datasource.password=MotDePasseFortIci
+
+spring.jpa.hibernate.ddl-auto=update
+spring.jpa.show-sql=false
+spring.jpa.properties.hibernate.format_sql=false
+spring.jpa.open-in-view=false
+
+app.upload.dir=/opt/chapchap/uploads/preuves/
+
+spring.servlet.multipart.enabled=true
+spring.servlet.multipart.max-file-size=5MB
+spring.servlet.multipart.max-request-size=10MB
+
+spring.thymeleaf.cache=true
+spring.main.log-startup-info=false
+spring.main.banner-mode=off
+```
+
+## 9. Tester le JAR
+
+```bash
+cd /opt/chapchap
+java -Xms512m -Xmx2G -jar ChapChap.jar --spring.config.location=file:/opt/chapchap/application.properties
+```
+
+Tester dans navigateur :
+
+```text
+http://IP_DU_VPS:9000
+```
+
+Arrête avec :
+
+```bash
+CTRL + C
+```
+
+## 10. Créer service systemd
+
+```bash
+nano /etc/systemd/system/chapchap.service
+```
+
+Colle :
+
+```ini
+[Unit]
+Description=ChapChap Spring Boot Application
+After=network.target mysql.service
+
+[Service]
+User=root
+WorkingDirectory=/opt/chapchap
+ExecStart=/usr/bin/java -Xms512m -Xmx2G -jar /opt/chapchap/ChapChap.jar --spring.config.location=file:/opt/chapchap/application.properties
+SuccessExitStatus=143
+Restart=always
+RestartSec=10
+
+[Install]
+WantedBy=multi-user.target
+```
+
+Activer :
+
+```bash
+systemctl daemon-reload
+systemctl enable chapchap
+systemctl start chapchap
+systemctl status chapchap
+```
+
+Voir les logs :
+
+```bash
+journalctl -u chapchap -f
+```
+
+## 11. Configurer Nginx
+
+```bash
+nano /etc/nginx/sites-available/chapchap
+```
+
+Colle :
+
+```nginx
+server {
+    listen 80;
+    server_name TON_DOMAINE.com www.TON_DOMAINE.com;
+
+    location / {
+        proxy_pass http://localhost:9000;
+        proxy_http_version 1.1;
+
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+}
+```
+
+Activer :
+
+```bash
+ln -s /etc/nginx/sites-available/chapchap /etc/nginx/sites-enabled/
+nginx -t
+systemctl restart nginx
+```
+
+## 12. Installer HTTPS SSL
+
+```bash
+apt install certbot python3-certbot-nginx -y
+```
+
+```bash
+certbot --nginx -d TON_DOMAINE.com -d www.TON_DOMAINE.com
+```
+
+## Commandes utiles après déploiement
+
+Redémarrer l’app :
+
+```bash
+systemctl restart chapchap
+```
+
+Voir statut :
+
+```bash
+systemctl status chapchap
+```
+
+Voir logs :
+
+```bash
+journalctl -u chapchap -f
+```
+
+Remplacer le JAR :
+
+```bash
+systemctl stop chapchap
+scp target/ChapChap.jar root@IP_DU_VPS:/opt/chapchap/ChapChap.jar
+systemctl start chapchap
+```
+
+Vérifier RAM :
+
+```bash
+free -h
+```
+
+Vérifier stockage :
+
+```bash
+df -h
+```
+
+Surveiller serveur :
+
+```bash
+apt install htop -y
+htop
+```
