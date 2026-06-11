@@ -8,7 +8,7 @@
 
 <p align="center">
   <strong>Réalisé par</strong><br>
-  <strong>Abdel-hamid Mahamat Louki</strong> & <strong>Mahamat Ahmat Timan</strong><br>
+  <strong>Abdel-hamid Mahamat Louki</strong> & <strong>Mahamat Ahmat Timan</strong> & <strong> Idriss Chadili</strong><br>
   <em>Sous la supervision du Professeur Mohamed Chibani</em><br>
   Maintenance Logicielle · Promotion 2026
 </p>
@@ -420,6 +420,7 @@ Conformément aux exigences du module, le projet comprend :
 |---|---|---|
 | **Abdel-hamid Mahamat Louki** | Workflow & Quality Lead | Stratégie Git, gestion des Pull Requests, release `v1.0.0` ; déploiement SonarQube, pilotage du refactoring et des Design Patterns |
 | **Mahamat Ahmat Timan** | Feature & Documentation Lead | Développement du noyau métier (CRUD, Spring Security) ; intégration de l’IA (API Groq, RAG) ; rédaction de la documentation technique et de l’offre commerciale |
+| **Idriss Chadili** | Tester | Conception et exécution de tests unitaires avec JUnit ; vérification de la conformité des fonctionnalités ; prévention des régressions et renforcement de la qualité du logiciel. |
 
 ---
 
