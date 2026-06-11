@@ -42,6 +42,7 @@
   - [Installation](#installation)
   - [Compte par défaut](#compte-par-défaut)
   - [Analyse SonarQube](#analyse-sonarqube)
+  - [Résultat de tests](#resultat-test-unitaire)
 - [Routes principales](#routes-principales)
 - [Livrables du projet](#livrables-du-projet)
 - [Contacts](#contacts)
@@ -359,6 +360,11 @@ mvn clean verify sonar:sonar \
 ```
 
 ---
+
+### Résultat de tests
+
+![Test unitaire, Résultat d'erreur](images/test_error.png)
+![Test unitaire, Résultat de succès](images/test_success.png)
 
 ## Routes principales
 
