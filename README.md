@@ -79,6 +79,12 @@ Ces choix réduisent le couplage, facilitent les tests unitaires et simplifient 
 
 ---
 
+## Diagramme d'architecture
+
+![Diagramme d'architecture](images/diagramme-architecture.png)
+
+---
+
 ## Fonctionnalités
 
 ### Authentification et sécurité
